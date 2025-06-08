@@ -1,0 +1,21 @@
+package com.ssafy.home.mapper;
+
+import com.ssafy.home.domain.HouseInfo;
+import com.ssafy.home.dto.HouseDongGroupDTO;
+import com.ssafy.home.dto.HouseDongSearchDTO;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface HouseInfoMapper {
+    public void insertHouseInfo(HouseInfo houseInfo);
+    public List<HouseInfo> getAllHouseInfo();
+    public HouseInfo getHouseInfoByAptCode(String aptCode);
+    public boolean updateHouseInfoByAptCode(String aptCode, HouseInfo houseInfo);
+    public List<HouseDongSearchDTO> getHouseInfosByDongCode(String code);
+    public List<HouseDongSearchDTO> getHouseInfosBySigugunCode(String code);
+    public List<HouseDongGroupDTO> getGroupedHouseInfoByDongCode(String code);
+    public boolean deleteHouseInfoByAptCode(String aptCode);
+    public int deleteAll();
+}

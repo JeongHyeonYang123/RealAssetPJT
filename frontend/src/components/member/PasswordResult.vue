@@ -1,0 +1,33 @@
+<script setup>
+import {onMounted} from 'vue'
+import emailjs from '@emailjs/browser'
+import {useRouter} from 'vue-router'
+
+const props = defineProps({
+  userEmail: String,
+  userName: String,
+  tempPassword: String
+})
+
+const router = useRouter()
+
+onMounted(() => {
+  emailjs.init('I053Kw13_t8g9cmg4') // EmailJS 초기화
+
+  const emailParams = {
+    user_email: props.userEmail,
+    user_name: props.userName,
+    temp_password: props.tempPassword
+  }
+
+  emailjs.send('service_hln5p5s', 'template_y20m4ml', emailParams)
+      .then(() => {
+        alert('임시 비밀번호가 이메일로 전송되었습니다.')
+        router.push('/user/login')
+      })
+      .catch(error => {
+        alert('이메일 전송 실패. 다시 시도해주세요.')
+        console.error(error)
+      })
+})
+</script>

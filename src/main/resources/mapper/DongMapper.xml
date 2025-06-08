@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.DongMapper">
+    <!-- 2) 동네 코드 입력 -->
+    <insert id="insertDong">
+        INSERT INTO dong_code_superman
+            (dong_code, sido_name, gugun_name, dong_name, lat, lng)
+        VALUES (#{code}, #{sido}, #{gugun}, #{dong}, #{lat}, #{lng})
+    </insert>
+
+    <!-- 3) 동네 정보 수정 -->
+    <update id="updateDong">
+        UPDATE dong_code_superman
+        SET sido_name  = #{sido},
+            gugun_name = #{gugun},
+            dong_name  = #{ddong},
+            lat = #{lat},
+            lng = #{lng}
+        WHERE dong_code = #{code}
+    </update>
+
+    <!-- 4) 동네 코드 삭제 -->
+    <delete id="deleteDong">
+        DELETE
+        FROM dong_code_superman
+        WHERE dong_code = #{code}
+    </delete>
+    <delete id="deleteAll">
+        delete
+        from dong_code_superman;
+    </delete>
+
+    <!-- 5) 전체 동네 목록 조회 -->
+    <select id="getAllDongs" resultMap="dongCodesMap">
+        SELECT *
+        FROM dong_code_superman
+    </select>
+
+    <!-- 6) 코드로 단일 동네 조회 -->
+    <select id="getDongByCode" resultMap="dongCodesMap">
+        SELECT *
+        FROM dong_code_superman
+        WHERE dong_code = #{code}
+    </select>
+
+    <!-- 7) DTO 정보로 코드 조회 -->
+    <select id="getCodeByDongCode" resultType="java.lang.String">
+        SELECT dong_code
+        FROM dong_code_superman
+        WHERE sido_name = #{sido}
+          AND gugun_name = #{gugun}
+          AND dong_name = #{dong}
+    </select>
+
+    <!-- 8) 시도 목록 (중복 제거) -->
+    <select id="getSidoList" resultMap="dongCodesMap">
+        SELECT DISTINCT sido_name AS sidoName
+        FROM dong_code_superman
+    </select>
+
+    <!-- 9) 구군 목록 (특정 시도 기준) -->
+    <select id="getGugunListBySido" resultMap="dongCodesMap">
+        SELECT DISTINCT gugun_name AS gugunName
+        FROM dong_code_superman
+        WHERE sido_name = #{sido}
+    </select>
+
+    <!-- 10) 동 목록 (특정 시도·구군 기준) -->
+    <select id="getDongListBySidoAndGugun" resultMap="dongCodesMap">
+        SELECT dong_code AS dongCode,
+               dong_name AS dongName
+        FROM dong_code_superman
+        WHERE sido_name = #{sido}
+          AND gugun_name = #{gugun}
+    </select>
+
+    <select id="getDongsByCodes" resultMap="dongCodesMap">
+        SELECT
+        *
+        FROM dong_code_superman
+        WHERE dong_code IN
+        <foreach
+                collection="dongCodes"
+                item="code"
+                open="("
+                separator=","
+                close=")"
+        >
+            #{code}
+        </foreach>
+    </select>
+
+    <resultMap id="dongCodesMap" type="com.ssafy.home.domain.DongCode">
+        <id column="dong_code" property="code"/>
+        <result column="sido_name" property="sido"/>
+        <result column="gugun_name" property="gugun"/>
+        <result column="dong_name" property="dong"/>
+        <result column="lat" property="lat"/>
+        <result column="lng" property="lng"/>
+        <result column="avg_price" property="avgPrice"/>
+        <result column="apt_count" property="aptCount"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+</mapper>

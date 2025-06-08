@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.HouseMapper">
+    <select id="findApartmentsWithLatestDeal" resultType="com.ssafy.home.dto.ApartmentWithLatestDeal">
+        SELECT 
+            h.apt_seq,
+            h.sgg_cd,
+            h.umd_cd,
+            h.umd_nm,
+            h.jibun,
+            h.road_nm_sgg_cd,
+            h.road_nm,
+            h.road_nm_bonbun,
+            h.road_nm_bubun,
+            h.apt_nm,
+            h.build_year,
+            h.latitude,
+            h.longitude,
+            d.deal_amount as latest_deal_amount,
+            d.exclu_use_ar as latest_exclu_use_ar,
+            d.deal_year as latest_deal_year,
+            d.deal_month as latest_deal_month,
+            d.deal_day as latest_deal_day
+        FROM (
+            SELECT 
+                apt_seq,
+                deal_amount,
+                exclu_use_ar,
+                deal_year,
+                deal_month,
+                deal_day,
+                ROW_NUMBER() OVER (PARTITION BY apt_seq ORDER BY deal_year DESC, deal_month DESC, deal_day DESC) as rn
+            FROM housedeals
+            WHERE 1=1
+            <if test="minPrice != null">
+                AND CAST(REPLACE(deal_amount, ',', '') AS SIGNED) &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND CAST(REPLACE(deal_amount, ',', '') AS SIGNED) &lt;= #{maxPrice}
+            </if>
+            <if test="minArea != null">
+                AND exclu_use_ar &gt;= #{minArea}
+            </if>
+            <if test="maxArea != null">
+                AND exclu_use_ar &lt;= #{maxArea}
+            </if>
+        ) d
+        JOIN houseinfos h ON d.apt_seq = h.apt_seq
+        WHERE d.rn = 1
+        <if test="addressKeyword != null">
+            AND (h.sgg_cd, h.umd_cd) = (
+                SELECT SUBSTRING(dong_code, 1, 5), SUBSTRING(dong_code, 6, 5)
+                FROM dongcodes
+                WHERE dong_name = #{addressKeyword}
+                LIMIT 1
+            )
+        </if>
+        ORDER BY d.deal_year DESC, d.deal_month DESC, d.deal_day DESC
+        LIMIT 20
+    </select>
+
+    <select id="findDongCodeByName" resultType="com.ssafy.home.domain.DongCode">
+        SELECT 
+            dong_code as code,
+            sido_name as sido,
+            gugun_name as gugun,
+            dong_name as dong,
+            latitude as lat,
+            longitude as lng
+        FROM dong_code_superman
+        WHERE dong_name = #{dongName}
+           OR dong_name LIKE CONCAT('%', #{dongName}, '%')
+        LIMIT 1
+    </select>
+</mapper> 

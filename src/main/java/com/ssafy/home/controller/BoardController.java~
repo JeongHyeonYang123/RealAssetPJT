@@ -1,0 +1,154 @@
+package com.ssafy.home.controller;
+
+import com.ssafy.home.domain.Board;
+import com.ssafy.home.dto.Response;
+import com.ssafy.home.service.BoardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/boards")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "게시글 관련 API", description = "게시글 관리 기능 제공")
+public class BoardController {
+    private final BoardService boardService;
+
+    // CREATE
+    @Operation(summary = "게시글 등록", description = "새로운 게시글을 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 등록 성공"),
+            @ApiResponse(responseCode = "400", description = "게시글 등록 실패")
+    })
+    @PostMapping
+    public ResponseEntity<Response<Void>> createPost(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "게시글 정보",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = Board.class))
+            )
+            @RequestBody Board board) {
+        boolean ok = boardService.createPost(board) == 1;
+
+        if (!ok) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(false, "게시글 등록에 실패하였습니다.", null));
+        }
+
+        return ResponseEntity.ok(new Response<>(true, "게시글 등록에 성공하였습니다.", null));
+    }
+
+    // READ (전체)
+    @Operation(summary = "게시글 전체 조회", description = "모든 게시글을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 리스트 조회 성공")
+    })
+    @GetMapping
+    public ResponseEntity<Response<List<Board>>> getAllPosts() {
+        List<Board> boards = boardService.getAllPosts();
+        return ResponseEntity.ok(new Response<>(true, "게시글 리스트", boards));
+    }
+
+    // READ (단건)
+    @Operation(summary = "게시글 단건 조회", description = "게시글 번호로 게시글을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "게시글 조회 실패")
+    })
+    @GetMapping("/{bno}")
+    public ResponseEntity<Response<Board>> getPost(
+            @Parameter(description = "게시글 번호", example = "1")
+            @PathVariable int bno) {
+        Board board = boardService.getPost(bno);
+
+        if (board == null) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(false, "게시글 조회에 실패하였습니다.", null));
+        }
+
+        return ResponseEntity.ok(new Response<>(true, "게시글 조회", board));
+    }
+
+    // UPDATE
+    @Operation(summary = "게시글 수정", description = "게시글 내용을 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "게시글 수정 실패")
+    })
+    @PutMapping("/{bno}")
+    public ResponseEntity<Response<Void>> modifyPost(
+            @Parameter(description = "게시글 번호", example = "1")
+            @PathVariable int bno,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "수정할 게시글 정보",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = Board.class))
+            )
+            @RequestBody Board board) {
+        boolean ok = boardService.modifyPost(board, bno) == 1;
+
+        if (!ok) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(false, "게시글 수정에 실패하였습니다.", null));
+        }
+
+        return ResponseEntity.ok(new Response<>(true, "게시글 수정에 성공하였습니다.", null));
+    }
+
+<<<<<<< HEAD
+    // 글 수정
+    @PostMapping("/edit")
+    public String edit(@ModelAttribute BoardDTO dto, HttpSession session) {
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null || !"admin".equals(loginUser.getGrade())) {
+            return "redirect:/board/list";
+        }
+        boardService.update(dto);
+        return "redirect:/board/detail?bno=" + dto.getBno();
+    }
+
+
+    // 글 삭제
+    @PostMapping("/delete")
+    public String delete(@RequestParam int bno, HttpSession session) {
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null || !"admin".equals(loginUser.getGrade())) {
+            return "redirect:/board/list";
+=======
+    // DELETE
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "게시글 삭제 실패")
+    })
+    @DeleteMapping("/{bno}")
+    public ResponseEntity<Response<Void>> deletePost(
+            @Parameter(description = "게시글 번호", example = "1")
+            @PathVariable int bno) {
+        boolean ok = boardService.removePost(bno) == 1;
+
+        if (!ok) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(false, "게시글 삭제에 실패하였습니다.", null));
+>>>>>>> refactor/rest-api-migration
+        }
+
+        return ResponseEntity.ok(new Response<>(true, "게시글 삭제에 성공하였습니다.", null));
+    }
+}

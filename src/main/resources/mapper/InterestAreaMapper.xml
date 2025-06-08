@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.InterestAreaMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into interest_areas
+            (mno, dong_code)
+        values (#{mno},
+                #{dongCode})
+    </insert>
+
+    <delete id="delete">
+        delete
+        from interest_areas
+        where id = #{id}
+    </delete>
+    <delete id="deleteAll">
+        delete
+        from interest_areas
+    </delete>
+
+    <select id="selectAll" resultMap="interestAreaMap">
+        select *
+        from interest_areas
+    </select>
+    <select id="findByMno" resultMap="interestAreaMap">
+        select *
+        from interest_areas
+        where mno = #{mno}
+    </select>
+
+    <resultMap id="interestAreaMap" type="com.ssafy.home.domain.InterestArea">
+        <id column="id" property="id"/>
+        <result column="mno" property="mno"/>
+        <result column="dong_code" property="dongCode"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+</mapper>

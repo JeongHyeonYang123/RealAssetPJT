@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.FavoriteHousedealMapper">
+    <insert id="insert">
+        INSERT INTO favorite_housedeals (user_mno, apt_seq)
+        VALUES (#{userMno}, #{aptSeq})
+    </insert>
+
+    <update id="undelete">
+        update favorite_housedeals
+        set deleted = 0
+        where user_mno = #{userMno} and apt_seq = #{aptSeq}
+    </update>
+
+    <select id="selectAll" resultType="com.ssafy.home.dto.FavoriteHousedealDto">
+        SELECT * FROM favorite_housedeals WHERE deleted = 0
+    </select>
+    <select id="selectById" resultType="com.ssafy.home.dto.FavoriteHousedealDto">
+        SELECT * FROM favorite_housedeals WHERE id = #{id} AND deleted = 0
+    </select>
+    <delete id="deleteById">
+        UPDATE favorite_housedeals SET deleted = 1 WHERE id = #{id}
+    </delete>
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM favorite_housedeals WHERE deleted = 0
+    </select>
+
+    <!-- === 유저 mno 기반 === -->
+    <select id="selectAllByUserMno" resultType="com.ssafy.home.dto.FavoriteHousedealDto">
+        SELECT * FROM favorite_housedeals WHERE user_mno = #{userMno} AND deleted = 0
+    </select>
+    <select id="selectByIdAndUserMno" resultType="com.ssafy.home.dto.FavoriteHousedealDto">
+        SELECT * FROM favorite_housedeals WHERE id = #{id} AND user_mno = #{userMno} AND deleted = 0
+    </select>
+    <delete id="deleteByIdAndUserMno">
+        UPDATE favorite_housedeals SET deleted = 1 WHERE id = #{id} AND user_mno = #{userMno}
+    </delete>
+    <select id="countAllByUserMno" resultType="int">
+        SELECT COUNT(*) FROM favorite_housedeals WHERE user_mno = #{userMno} AND deleted = 0
+    </select>
+</mapper> 

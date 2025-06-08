@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.HouseDealsMapper">
+
+    <!-- 1) 새 거래 정보 등록 -->
+    <insert id="insertHouseDeal" useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO `housedeals`
+        (apt_seq, apt_dong, floor,
+         deal_year, deal_month, deal_day,
+         exclu_use_ar, deal_amount)
+        VALUES
+            (#{aptSeq}, #{aptDong}, #{floor},
+             #{dealYear}, #{dealMonth}, #{dealDay},
+             #{excluUseAr}, #{dealAmount})
+    </insert>
+
+    <!-- 2) 거래 정보 수정 -->
+    <update id="updateHouseDeal">
+        UPDATE `housedeals`
+        SET apt_seq      = #{aptSeq},
+            apt_dong     = #{aptDong},
+            floor        = #{floor},
+            deal_year    = #{dealYear},
+            deal_month   = #{dealMonth},
+            deal_day     = #{dealDay},
+            exclu_use_ar = #{excluUseAr},
+            deal_amount  = #{dealAmount}
+        WHERE no = #{no}
+    </update>
+
+    <!-- 3) 거래 정보 삭제 -->
+    <delete id="deleteHouseDealByCode">
+        DELETE FROM `housedeals`
+        WHERE no = #{code}
+    </delete>
+    <delete id="deleteAll">
+        delete
+        from housedeals
+    </delete>
+
+    <!-- 4) 전체 거래 목록 조회 -->
+    <select id="getAllHouseDeals" resultMap="houseDealMap">
+        SELECT
+            no,
+            apt_seq,
+            apt_dong,
+            floor,
+            deal_year,
+            deal_month,
+            deal_day,
+            exclu_use_ar,
+            deal_amount
+        FROM `housedeals`
+        ORDER BY no DESC
+    </select>
+
+    <!-- 5) 거래번호로 단일 조회 -->
+    <select id="getHouseDealByCode" resultMap="houseDealMap">
+        SELECT
+            no,
+            apt_seq,
+            apt_dong,
+            floor,
+            deal_year,
+            deal_month,
+            deal_day,
+            exclu_use_ar,
+            deal_amount
+        FROM `housedeals`
+        WHERE no = #{code}
+    </select>
+
+    <!-- 6) 조건별 거래 조회 -->
+    <select id="getHouseDealsByConditions"  resultMap="houseDealMap">
+        SELECT
+        no,
+        apt_seq,
+        apt_dong,
+        floor,
+        deal_year,
+        deal_month,
+        deal_day,
+        exclu_use_ar,
+        deal_amount
+        FROM `housedeals`
+        <where>
+            <if test="aptSeq != null and aptSeq != ''">
+                AND apt_seq = #{aptSeq}
+            </if>
+            <if test="aptDong != null and aptDong != ''">
+                AND apt_dong = #{aptDong}
+            </if>
+            <if test="floor != null and floor != ''">
+                AND floor = #{floor}
+            </if>
+            <if test="dealYear != null">
+                AND deal_year = #{dealYear}
+            </if>
+            <if test="dealMonth != null">
+                AND deal_month = #{dealMonth}
+            </if>
+            <if test="dealDay != null">
+                AND deal_day = #{dealDay}
+            </if>
+        </where>
+        ORDER BY deal_year DESC, deal_month DESC, deal_day DESC
+    </select>
+
+    <resultMap id="houseDealMap" type="com.ssafy.home.domain.HouseDeal">
+        <id property="no" column="no"/>
+        <result property="aptSeq" column="apt_seq"/>
+        <result property="aptDong" column="apt_dong"/>
+        <result property="floor" column="floor"/>
+        <result property="dealYear" column="deal_year"/>
+        <result property="dealMonth" column="deal_month"/>
+        <result property="dealDay" column="deal_day"/>
+        <result property="execluUseAr" column="exclu_use_ar"/>
+        <result property="dealAmount" column="deal_amount"/>
+    </resultMap>
+</mapper>

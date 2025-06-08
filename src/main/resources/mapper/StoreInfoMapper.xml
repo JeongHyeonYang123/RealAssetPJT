@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.StoreInfoMapper">
+    <delete id="deleteAll">
+        delete
+        from store_info
+    </delete>
+
+    <select id="selectByDongCode" resultMap="storeInfoMap">
+        select *
+        from store_info si
+        where si.legal_dong_code = #{dongCode};
+    </select>
+
+    <resultMap id="storeInfoMap" type="com.ssafy.home.domain.StoreInfo">
+        <id column="store_id" property="storeId"/>
+        <result column="store_name" property="storeName"/>
+        <result column="branch_name" property="branchName"/>
+        <result column="category_major_name" property="categoryMajorName"/>
+        <result column="category_mid_name" property="categoryMidName"/>
+        <result column="category_minor_name" property="categoryMinorName"/>
+        <result column="city" property="city"/>
+        <result column="district" property="district"/>
+        <result column="legal_dong_code" property="legalDongCode"/>
+        <result column="road_address" property="roadAddress"/>
+        <result column="building_name" property="buildingName"/>
+    </resultMap>
+</mapper>

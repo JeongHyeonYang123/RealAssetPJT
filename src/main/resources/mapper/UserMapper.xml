@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.home.mapper.UserMapper">
+
+    <!-- 1) 회원 가입 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="mno">
+        INSERT INTO `user`
+            (`name`, `email`, `password`, `address`, `role`, `is_verified`, `verification_token`, `token_expiry_date`, `profile_image`)
+        VALUES (#{name}, #{email}, #{password},
+                #{address}, #{role},
+                #{isVerified}, #{verificationToken}, #{tokenExpiryDate}, #{profileImage})
+    </insert>
+
+    <!-- 2) 소프트 삭제: user_deleted 테이블에 삽입 -->
+    <insert id="insertDeletedUserByEmail">
+        INSERT INTO user_deleted (email)
+        VALUES (#{email})
+    </insert>
+
+    <!-- 3) 회원 정보 수정 - is_verified 보호 로직 추가 -->
+    <update id="update">
+        UPDATE `user`
+        <set>
+            <if test="user.name != null">`name` = #{user.name},</if>
+            <if test="user.address != null">`address` = #{user.address},</if>
+            <if test="user.refresh != null">`refresh` = #{user.refresh},</if>
+            <if test="user.password != null">`password` = #{user.password},</if>
+            <if test="user.role != null">`role` = #{user.role},</if>
+
+            <!-- is_verified는 false→true만 가능, true→false 불가 -->
+            <if test="user.isVerified != null and user.isVerified == true">
+                `is_verified` = #{user.isVerified},
+            </if>
+
+            <if test="user.verificationToken != null">`verification_token` = #{user.verificationToken},</if>
+            <if test="user.tokenExpiryDate != null">`token_expiry_date` = #{user.tokenExpiryDate},</if>
+            <if test="user.profileImage != null">`profile_image` = #{user.profileImage},</if>
+        </set>
+        WHERE `mno` = #{mno}
+    </update>
+
+    <!-- 4) 임시 비밀번호 설정 -->
+    <update id="updateTemporaryPasswordByEmail" parameterType="map">
+        UPDATE `user`
+        SET `password` = #{newPassword}
+        WHERE `email` = #{email}
+    </update>
+    <update id="updateDeletedUserByEmail">
+        UPDATE `user`
+        SET `role` = 'deleted'
+        WHERE `email` = #{email}
+    </update>
+
+    <!-- 5) 물리 삭제 -->
+    <delete id="deleteByEmail">
+        DELETE
+        FROM `user`
+        WHERE `email` = #{email}
+    </delete>
+    <delete id="deleteAll">
+        delete
+        from user
+    </delete>
+    <delete id="deleteByMno">
+        delete
+        from user
+        where mno = #{mno}
+    </delete>
+
+    <!-- 6) 로그인: 삭제되지 않은(user_deleted에 없는) 유저만 -->
+    <select id="findByEmailAndPassword" resultMap="userMap">
+        SELECT u.*
+        FROM user u
+                 LEFT JOIN user_deleted d ON u.email = d.email
+        WHERE d.email IS NULL
+          AND u.email = #{email}
+          AND u.`password` = #{password}
+    </select>
+
+    <!-- 7) 비밀번호 조회 -->
+    <select id="findPasswordByEmail" resultType="java.lang.String">
+        SELECT password
+        FROM user
+        WHERE email = #{email}
+    </select>
+
+    <!-- 8) 이름·이메일·휴대폰으로 회원 조회(비삭제) -->
+    <select id="findByNameAndEmail" resultMap="userMap">
+        SELECT u.*
+        FROM `user` u
+                 LEFT JOIN user_deleted d ON u.email = d.email
+        WHERE d.email IS NULL
+          AND u.name = #{name}
+          AND u.email = #{email}
+    </select>
+
+    <!-- 9) 이메일로 회원 조회(비삭제) -->
+    <select id="findByEmail" resultMap="userMap">
+        SELECT u.*
+        FROM `user` u
+                 LEFT JOIN user_deleted d ON u.email = d.email
+        WHERE d.email IS NULL
+          AND u.email = #{email}
+    </select>
+
+    <!-- 10) 전체 회원 조회(비삭제) -->
+    <select id="selectAll" resultMap="userMap">
+        SELECT u.*
+        FROM `user` u
+                 LEFT JOIN user_deleted d ON u.email = d.email
+        WHERE d.email IS NULL
+        ORDER BY u.mno DESC
+    </select>
+
+    <!-- 11) 키워드로 회원 검색(비삭제) - 이름과 이메일 모두 검색 -->
+    <select id="searchByKeyword" resultMap="userMap">
+        SELECT u.*
+        FROM `user` u
+        LEFT JOIN user_deleted d ON u.email = d.email
+        <where>
+            d.email IS NULL
+            <if test="_parameter != null and _parameter != ''">
+                AND (
+                u.name LIKE CONCAT('%', #{keyword}, '%')
+                OR u.email LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY u.mno DESC
+    </select>
+
+    <!-- 12) 삭제 여부 확인 -->
+    <select id="isUserDeleted" resultType="boolean">
+        SELECT EXISTS(SELECT 1
+                      FROM user_deleted
+                      WHERE email = #{email})
+    </select>
+
+    <select id="findByMno" resultMap="userMap">
+        select *
+        from user
+        where mno = #{mno}
+    </select>
+
+    <select id="findEmailByMno" resultType="java.lang.String">
+        select email
+        from user
+        where mno = #{mno}
+    </select>
+
+    <select id="findByVerificationToken" resultMap="userMap">
+        SELECT * FROM user WHERE verification_token = #{token}
+    </select>
+
+    <resultMap id="userMap" type="com.ssafy.home.domain.User">
+        <id column="mno" property="mno"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="name" property="name"/>
+        <result column="address" property="address"/>
+        <result column="role" property="role"/>
+        <result column="is_verified" property="isVerified"/>
+        <result column="verification_token" property="verificationToken"/>
+        <result column="token_expiry_date" property="tokenExpiryDate"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="profile_image" property="profileImage"/>
+    </resultMap>
+</mapper>

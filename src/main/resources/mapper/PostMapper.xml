@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.home.mapper.PostMapper">
+
+    <insert id="insertPost" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (author_mno, author_name, category, title, content, tags, created_at, updated_at, views, likes, dislikes, comments_count, is_deleted)
+        VALUES (#{authorMno}, #{authorName}, #{category}, #{title}, #{content},
+        <choose>
+            <when test="tags != null and tags.size() > 0">
+                JSON_ARRAY(<foreach collection="tags" item="tag" separator=",">#{tag}</foreach>)
+            </when>
+            <otherwise>NULL</otherwise>
+        </choose>,
+        NOW(), NOW(), 0, 0, 0, 0, FALSE)
+    </insert>
+
+    <select id="selectPostById" resultType="PostDto">
+        SELECT
+            id, author_mno as authorMno, author_name as authorName, category, title, content,
+            CASE
+                WHEN tags IS NOT NULL THEN
+                    CAST(tags AS JSON)
+                ELSE NULL
+                END as tags,
+            created_at as createdAt, updated_at as updatedAt, views, likes, dislikes,
+            comments_count as commentsCount, is_deleted as isDeleted
+        FROM posts
+        WHERE id = #{id} AND is_deleted = FALSE
+    </select>
+
+    <select id="selectPosts" resultType="PostDto">
+        SELECT
+        id, author_mno as authorMno, author_name as authorName, category, title, content,
+        CASE
+        WHEN tags IS NOT NULL THEN
+        CAST(tags AS JSON)
+        ELSE NULL
+        END as tags,
+        created_at as createdAt, updated_at as updatedAt, views, likes, dislikes,
+        comments_count as commentsCount, is_deleted as isDeleted
+        FROM posts
+        WHERE is_deleted = FALSE
+
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (title LIKE CONCAT('%', #{searchKeyword}, '%')
+            OR content LIKE CONCAT('%', #{searchKeyword}, '%')
+            OR author_name LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+
+        <if test="authorMno != null">
+            AND author_mno = #{authorMno}
+        </if>
+
+        ORDER BY
+        <choose>
+            <when test="sortBy == 'views'">views</when>
+            <when test="sortBy == 'likes'">likes</when>
+            <when test="sortBy == 'comments'">comments_count</when>
+            <otherwise>created_at</otherwise>
+        </choose>
+
+        <choose>
+            <when test="sortDirection == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+
+        <if test="page != null and size != null">
+            LIMIT #{size} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countPosts" resultType="Integer">
+        SELECT COUNT(*) FROM posts WHERE is_deleted = FALSE
+
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (title LIKE CONCAT('%', #{searchKeyword}, '%')
+            OR content LIKE CONCAT('%', #{searchKeyword}, '%')
+            OR author_name LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+
+        <if test="authorMno != null">
+            AND author_mno = #{authorMno}
+        </if>
+    </select>
+
+    <update id="updatePost">
+        UPDATE posts
+        <set>
+            <if test="category != null">category = #{category},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="tags != null">
+                tags = <choose>
+                <when test="tags.size() > 0">
+                    JSON_ARRAY(<foreach collection="tags" item="tag" separator=",">#{tag}</foreach>)
+                </when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            </if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id} AND is_deleted = FALSE
+    </update>
+
+    <update id="deletePost" parameterType="Long">
+        UPDATE posts SET is_deleted = TRUE, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="incrementViews" parameterType="Long">
+        UPDATE posts SET views = views + 1 WHERE id = #{id}
+    </update>
+
+    <update id="updateLikes">
+        UPDATE posts SET likes = #{likes} WHERE id = #{id}
+    </update>
+
+    <update id="updateDislikes">
+        UPDATE posts SET dislikes = #{dislikes} WHERE id = #{id}
+    </update>
+
+    <update id="updateCommentsCount">
+        UPDATE posts SET comments_count = #{count} WHERE id = #{id}
+    </update>
+
+    <select id="selectPostsByAuthor" resultType="PostDto">
+        SELECT
+        id, author_mno as authorMno, author_name as authorName, category, title, content,
+        CASE
+        WHEN tags IS NOT NULL THEN
+        CAST(tags AS JSON)
+        ELSE NULL
+        END as tags,
+        created_at as createdAt, updated_at as updatedAt, views, likes, dislikes,
+        comments_count as commentsCount, is_deleted as isDeleted
+        FROM posts
+        WHERE author_mno = #{authorMno} AND is_deleted = FALSE
+        ORDER BY created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countPostsByAuthor" resultType="Integer">
+        SELECT COUNT(*) FROM posts WHERE author_mno = #{authorMno} AND is_deleted = FALSE
+    </select>
+
+</mapper>

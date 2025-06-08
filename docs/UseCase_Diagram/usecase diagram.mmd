@@ -1,0 +1,46 @@
+flowchart 
+    %% 액터를 사각형으로 변경
+    User1["👤<br/>비회원"]
+    User2["👥<br/>회원"]
+    
+    %% 나머지 구조는 동일
+    subgraph MEM["🔐 회원 관리"]
+        UC1(("회원가입"))
+        UC2(("로그인/로그아웃"))
+        UC3(("마이페이지 조회"))
+        UC4(("회원정보 수정"))
+        UC5(("회원탈퇴"))
+    end
+    
+    subgraph PROP["🏠 부동산 정보"]
+        UC6(("매물 검색"))
+        UC7(("매물 상세 조회"))
+        UC8(("실거래가 조회"))
+    end
+    
+    subgraph FAV["⭐ 관심 관리"]
+        UC9(("관심 지역 관리"))
+        UC10(("관심 매물 관리"))
+    end
+    
+    subgraph COMM["💬 커뮤니티"]
+        UC11(("게시글 관리"))
+        UC12(("댓글 관리"))
+    end
+    
+    subgraph AI["🤖 AI 서비스"]
+        UC13(("챗봇 상담"))
+        UC14(("맞춤 추천"))
+    end
+    
+    %% 연결
+    User1 --> UC1 & UC2 & UC6 & UC7 & UC11 & UC13
+    User2 -.->|"extends"| User1
+    User2 --> UC3 & UC4 & UC5 & UC9 & UC10 & UC12 & UC14
+    
+    %% 스타일
+    classDef actor fill:#e3f2fd,stroke:#1976d2,stroke-width:4px,color:#0d47a1
+    classDef usecase fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    
+    class User1,User2 actor
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13,UC14 usecase

@@ -1,0 +1,20 @@
+package com.ssafy.home.mapper;
+
+import com.ssafy.home.domain.Board;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+import java.util.Optional;
+
+@Mapper
+public interface BoardMapper {
+    public int insert(Board board);
+    public Optional<Board> findById(int bno);
+    public int updateViewCount(int bno);
+    public List<Board> searchByTitle(String keyword);
+    public List<Board> searchByContent(String keyword);
+    public List<Board> findAll();
+    public int update(Board board, int bno);
+    public int delete(int bno);
+    public int deleteAll();
+}
